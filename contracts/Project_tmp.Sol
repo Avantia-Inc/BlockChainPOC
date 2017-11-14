@@ -1,0 +1,90 @@
+pragma solidity ^0.4.2;
+
+contract Project {
+
+    struct Bid {
+        address vendor; 
+        uint time;
+        uint cost;
+        bool accepted;
+    }
+
+    bytes32 public name;
+    address public client;
+
+    enum State { Open, Sold, Complete }
+    State public state;
+
+    // Dynamically-sized array of 'Bids' submitted by vendors.
+    Bid[] bids;
+
+    function Project(bytes32 projectName) public {
+        name = projectName; 
+        client = msg.sender;
+        state = State.Open;
+    }
+
+    // Ensures the sender address is equal to the project creator's address.
+    modifier onlyClient() {
+        require(msg.sender == client);
+        _;
+    }
+
+    // For simplicity, any address that is not the project creator's address is considered a vendor.
+    modifier onlyVendor() {
+        require(msg.sender != client);
+        _;
+    }
+
+    modifier inState(State _state) {
+        require(state == _state);
+        _;
+    }
+
+    function placeBid(uint time, uint cost) 
+        inState(State.Open) // must not be sold or complete
+        onlyVendor // must not be the client placing the bid
+        public
+    {
+        bids.push(Bid({
+            vendor: msg.sender,
+            time: time,
+            cost: cost,
+            accepted: false
+        }));
+    }
+
+    function acceptBid(uint bidIndex)
+        payable // ether is transferred to the contract as escrow
+        inState(State.Open) // must not be already sold or completed
+        onlyClient // must be the client accepting their own project.
+        public
+    {
+        Bid storage bid = bids[bidIndex];
+
+        // the client must send ether equal to that of the project cost.
+        require(msg.value == bid.cost); 
+
+        bid.accepted = true;
+        state = State.Sold;
+    }
+
+    function completeProject() 
+        payable
+        inState(State.Sold)
+        onlyClient
+        public
+    {
+
+        // TODO: Find accepted bid.
+        Bid storage bid = bids[0];
+
+        // set the state before any attempt of transfer, otherwise the
+        // user could call this function many times and get more ether.
+        state = State.Complete;
+        
+        bid.vendor.transfer(bid.cost);
+    }
+
+    // TODO: Self destruct method to kill project contract
+}
