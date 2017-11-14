@@ -1,11 +1,16 @@
 # BlockChainPOC
 
-## Etherum
+## Terminology
+
+### Permissioned Blockchain
+Private blockchain networks that require permission to access. (i.e. JP Morgran's Quorum or IBM's Hyperledger Fabric). Permissioned blockahins are sometimes referred to as **distributed ledgers**.
+
+### Public Blockchain
+Blockchains that are available to the public (i.e. Bitcoin, Ethereum, etc.)
+
+### Ethereum
 > Ethereum is a decentralized platform that runs smart contracts: applications that run exactly as programmed without any possibility of downtime, censorship, fraud or third party interference. - https://www.ethereum.org/
 
-
-
-## Terminology
 ### Wallet
 A secure digit wallet or account used to store, send, or receive digital currency such as Ether, Bitcoin, etc.
 
