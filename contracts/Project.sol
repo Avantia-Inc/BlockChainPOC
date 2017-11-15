@@ -56,6 +56,8 @@ contract Project is Killable {
             accepted: false, 
             delivered: false
         });
+
+        // TODO: add event
     }
 
     function acceptBid(address vendor) 
@@ -72,11 +74,18 @@ contract Project is Killable {
         bid.accepted = true;
         state = State.Sold;
         vendor = bid.vendor;
+        // TODO: add event
     }
     
     function RecordHours(uint hoursWorked) onlyAcceptedVendor public {
         StatementOfWork storage sow = submittedBids[msg.sender];
         sow.reportedHours += hoursWorked;
+    }
+
+    function MarkDelivery() onlyAcceptedVendor public {
+        StatementOfWork storage sow = submittedBids[msg.sender];
+        sow.delivered = true;
+        // TODO: add delivered event
     }
 
     function completeProject() 
@@ -93,6 +102,7 @@ contract Project is Killable {
         state = State.Complete;
         
         acceptedVendor.transfer(TotalDue());
+        // TODO: added completed event
     }
 
     function CollectRefund()
