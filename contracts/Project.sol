@@ -15,14 +15,20 @@ contract Project is Killable {
     }
 
     bytes32 public name;
-    mapping(address => StatementOfWork) public submittedBids;
+    mapping(address => bytes32) public submittedBids;
+    mapping(address => StatementOfWork) public revealedBids;
     address acceptedVendor;
 
-    enum State { Open, Sold, Complete }
+    enum State { Open, Sold, Delivered, Complete }
     State public state;
 
-    function Project(bytes32 projectName) public {
-        name = projectName; 
+    uint public biddingEnd;
+    uint public revealEnd;
+
+    function Project(bytes32 _name, uint _biddingEnd, uint _revealEnd) public {
+        name = _name; 
+        biddingEnd = _biddingEnd;
+        revealEnd = _revealEnd;
         state = State.Open;
     }
 
@@ -42,12 +48,38 @@ contract Project is Killable {
         _;
     }
 
-    function submitBid(uint estimatedCompletionDate, uint estimatedHours, uint hourlyRate) 
+    modifier onlyBefore(uint _time) {
+        require(now < _time); 
+        _; 
+    }
+
+    modifier onlyAfter(uint _time) {
+        require(now > _time); 
+        _; 
+    }
+
+    function submitBid(uint estimatedCompletionDate, uint estimatedHours, uint hourlyRate)
         inState(State.Open) // must not be sold or complete
+        onlyBefore(biddingEnd) // before scheduled bidding end time
         onlyVendor // must not be the client placing the bid
-        public 
+        public
     {
-        submittedBids[msg.sender] = StatementOfWork({
+        submittedBids[msg.sender] = keccak256(estimatedCompletionDate, estimatedHours, hourlyRate);
+    }
+
+    function revealBid(uint estimatedCompletionDate, uint estimatedHours, uint hourlyRate) 
+        inState(State.Open) // must not be sold or complete
+        onlyAfter(biddingEnd) // after scheduled bidding end time
+        onlyBefore(revealEnd) // but before scheduled reveal end time
+        onlyVendor // must not be the client placing the bid
+        public
+    {
+        bytes32 bid = submittedBids[msg.sender];
+        bytes32 reveal = keccak256(estimatedCompletionDate, estimatedHours, hourlyRate);
+
+        require(bid == reveal);
+
+        revealedBids[msg.sender] = StatementOfWork({
             estimatedCompletionDate: estimatedCompletionDate, 
             estimatedHours: estimatedHours, 
             reportedHours: 0, 
@@ -66,7 +98,7 @@ contract Project is Killable {
         onlyOwner // must be the client accepting their own project.
         public
     {
-        StatementOfWork storage bid = submittedBids[vendor];
+        StatementOfWork storage bid = revealedBids[vendor];
 
         // the client must send ether equal to that of the project cost.
         require(msg.value == bid.estimatedHours * bid.hourlyRate); 
@@ -77,52 +109,58 @@ contract Project is Killable {
         // TODO: add event
     }
     
-    function RecordHours(uint hoursWorked) onlyAcceptedVendor public {
-        StatementOfWork storage sow = submittedBids[msg.sender];
+    function recordHours(uint hoursWorked) onlyAcceptedVendor public {
+        StatementOfWork storage sow = revealedBids[msg.sender];
         sow.reportedHours += hoursWorked;
     }
 
-    function MarkDelivery() onlyAcceptedVendor public {
-        StatementOfWork storage sow = submittedBids[msg.sender];
+    function markDelivery() 
+        inState(State.Sold) 
+        onlyAcceptedVendor
+        public 
+    {
+        StatementOfWork storage sow = revealedBids[msg.sender];
         sow.delivered = true;
+        state = State.Delivered;
         // TODO: add delivered event
     }
 
     function completeProject() 
-        inState(State.Sold)
+        inState(State.Delivered)
         onlyOwner
         public
     {
 
-        StatementOfWork storage sow = submittedBids[acceptedVendor];
+        StatementOfWork storage sow = revealedBids[acceptedVendor];
         require(sow.delivered);
 
         // set the state before any attempt of transfer, otherwise the
         // user could call this function many times and get more ether.
         state = State.Complete;
         
-        acceptedVendor.transfer(TotalDue());
+        uint refund = this.balance - totalDue();
+        acceptedVendor.transfer(refund);
         // TODO: added completed event
     }
 
-    function CollectRefund()
+    function withdrawPayment()
         inState(State.Complete)
-        onlyOwner
+        onlyAcceptedVendor
         public
     {
         msg.sender.transfer(this.balance);
     }
 
-    function TotalDue() constant public returns (uint totalDue) {
+    function totalDue() constant public returns (uint amount) {
         if (acceptedVendor == 0x0) {
-            totalDue = 0;
+            amount = 0;
         } else {
-            StatementOfWork storage sow = submittedBids[acceptedVendor];
+            StatementOfWork storage sow = revealedBids[acceptedVendor];
 
             if (sow.reportedHours <= sow.estimatedHours) {
-                totalDue = sow.reportedHours * sow.hourlyRate;
+                amount = sow.reportedHours * sow.hourlyRate;
             } else {
-                totalDue = sow.estimatedHours * sow.hourlyRate;
+                amount = sow.estimatedHours * sow.hourlyRate;
             }
         }
     }
