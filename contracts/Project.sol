@@ -2,7 +2,7 @@ pragma solidity ^0.4.2;
 
 import './zeppelin/lifecycle/Killable.sol';
 
-contract Project is Killable {
+contract Project is Ownable {
 
     struct StatementOfWork {
         uint estimatedCompletionDate;
@@ -17,7 +17,7 @@ contract Project is Killable {
     bytes32 public name;
     mapping(address => bytes32) public submittedBids;
     mapping(address => StatementOfWork) public revealedBids;
-    address acceptedVendor;
+    address public acceptedVendor;
 
     enum State { Open, Sold, Delivered, Complete }
     State public state;
@@ -105,11 +105,15 @@ contract Project is Killable {
 
         bid.accepted = true;
         state = State.Sold;
-        vendor = bid.vendor;
+        acceptedVendor = bid.vendor;
         // TODO: add event
     }
     
-    function recordHours(uint hoursWorked) onlyAcceptedVendor public {
+    function recordHours(uint hoursWorked) 
+        inState(State.Sold)
+        onlyAcceptedVendor 
+        public 
+    {
         StatementOfWork storage sow = revealedBids[msg.sender];
         sow.reportedHours += hoursWorked;
     }
@@ -130,16 +134,18 @@ contract Project is Killable {
         onlyOwner
         public
     {
-
-        StatementOfWork storage sow = revealedBids[acceptedVendor];
-        require(sow.delivered);
+        //StatementOfWork storage sow = revealedBids[acceptedVendor];
+        //require(sow.delivered);
 
         // set the state before any attempt of transfer, otherwise the
         // user could call this function many times and get more ether.
         state = State.Complete;
         
         uint refund = this.balance - totalDue();
-        acceptedVendor.transfer(refund);
+        if (refund > 0) {
+            msg.sender.transfer(refund);
+        }
+        
         // TODO: added completed event
     }
 
@@ -163,5 +169,15 @@ contract Project is Killable {
                 amount = sow.estimatedHours * sow.hourlyRate;
             }
         }
+    }
+
+    function kill() 
+        onlyOwner
+        public
+    {
+        assert(state != State.Delivered && state != State.Complete);
+     
+        // Remaining balance is refunded to owner
+        selfdestruct(owner);
     }
 }
