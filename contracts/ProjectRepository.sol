@@ -7,6 +7,7 @@ contract ProjectRepository {
 
     function createNewProject(bytes32 _name, uint _biddingEnd, uint _revealEnd) public {
         projects[msg.sender].push(new Project(_name, _biddingEnd, _revealEnd));
+        // TODO: project creation event
     }
 
     function myProjects() public view returns (Project[] _myProjects) {
