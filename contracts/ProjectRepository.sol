@@ -10,11 +10,11 @@ contract ProjectRepository {
         // TODO: project creation event
     }
 
-    function myProjects() public view returns (Project[] _myProjects) {
+    function myProjects() view public returns (Project[] _myProjects) {
         return projects[msg.sender];
     }
 
-    function projectAt(uint index) public view returns (Project _project) {
+    function projectAt(uint index) view public returns (Project _project) {
         return projects[msg.sender][index];
     }
 }
