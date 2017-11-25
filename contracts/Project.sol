@@ -1,6 +1,6 @@
 pragma solidity ^0.4.2;
 
-import './zeppelin/lifecycle/Killable.sol';
+import './zeppelin/ownership/Ownable.sol';
 
 contract Project is Ownable {
 
@@ -172,11 +172,10 @@ contract Project is Ownable {
     }
 
     function kill() 
+        inState(State.Open) // if state is sold to end early vendor records any hours, marks their work delivered, and contract is completed normally
         onlyOwner
         public
     {
-        assert(state != State.Delivered && state != State.Complete);
-     
         // Remaining balance is refunded to owner
         selfdestruct(owner);
     }
