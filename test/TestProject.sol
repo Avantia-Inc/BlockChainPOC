@@ -17,7 +17,7 @@ contract TestProject {
     Project myProject = repo.projectAt(0);
     vendor.sendProjectBid(myProject, bid);
 
-    mapping(address => bytes32) submittedBids = myProject.submittedBids();
-    Assert.equal(submittedBids[vendor], bid, "Added bid should match vendor address");
+    //mapping(address => bytes32) submittedBids = myProject.submittedBids();
+    Assert.equal(myProject.submittedBids(vendor), bid, "Added bid should match vendor address");
   }
 }
