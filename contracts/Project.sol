@@ -58,13 +58,13 @@ contract Project is Ownable {
         _; 
     }
 
-    function submitBid(uint estimatedCompletionDate, uint estimatedHours, uint hourlyRate)
+    function submitBid(bytes32 bid)
         inState(State.Open) // must not be sold or complete
         onlyBefore(biddingEnd) // before scheduled bidding end time
         onlyVendor // must not be the client placing the bid
         public
     {
-        submittedBids[msg.sender] = keccak256(estimatedCompletionDate, estimatedHours, hourlyRate);
+        submittedBids[msg.sender] = bid;
     }
 
     function revealBid(uint estimatedCompletionDate, uint estimatedHours, uint hourlyRate) 

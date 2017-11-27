@@ -2,15 +2,22 @@ pragma solidity ^0.4.2;
 
 import "truffle/Assert.sol";
 import "truffle/DeployedAddresses.sol";
+import "../contracts/ProjectRepository.sol";
 import "../contracts/Project.sol";
+import "../contracts/testProxies/VendorProxy.sol";
 
 contract TestProject {
 
-  function testProjectCreation() {
-    Project project = new Project("Test Project", 1511203271071, 1511203271071);
-  
-    bytes32 expected = "Test Project";
+  function testProjectCreation() public {
+    bytes32 bid = "some bid here";
+    ProjectRepository repo = ProjectRepository(DeployedAddresses.ProjectRepository());
+    VendorProxy vendor = new VendorProxy();
 
-    Assert.equal(project.name(), expected, "ERROR");
+    repo.createNewProject("new", now + 60, now + 120);
+    Project myProject = repo.projectAt(0);
+    vendor.sendProjectBid(myProject, bid);
+
+    mapping(address => bytes32) submittedBids = myProject.submittedBids();
+    Assert.equal(submittedBids[vendor], bid, "Added bid should match vendor address");
   }
 }
