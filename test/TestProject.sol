@@ -17,16 +17,6 @@ contract TestProject {
   uint hourlyRate = 300;
   bytes32 bid = keccak256(estimatedCompletionDate, estimatedHours, hourlyRate);
 
-   struct StatementOfWork {
-        uint estimatedCompletionDate;
-        uint estimatedHours;
-        uint reportedHours;
-        uint hourlyRate;
-        address vendor;
-        bool accepted;
-        bool delivered;
-    }
-
   function testProjectCreation() public {
     ProjectRepository repo = ProjectRepository(DeployedAddresses.ProjectRepository());
     
@@ -65,10 +55,16 @@ contract TestProject {
        // wait
      }
 
-    vendor.revealProjectBid(estimatedCompletionDate, estimatedHours, hourlyRate); // TODO - real values here.
-    
-    //StatementOfWork sow = myProject.revealedBids(vendor);
-       
-    //Assert.equal(sow.estimatedCompletionDate, estimatedCompletionDate, "SOW completion date should match.");
+    vendor.revealProjectBid(myProject, estimatedCompletionDate, estimatedHours, hourlyRate); // TODO - real values here.
+  
+    var (revealedCompletionDate, revealedEstimatedHours, revealedReportedHours, revealedHourlyRate, revealedVendor, revealedAccepted, revealedDelivered) = myProject.revealedBids(vendor);
+
+    Assert.equal(revealedCompletionDate, estimatedCompletionDate, "SOW completion date should match.");
+    //Assert.equal(revealedEstimatedHours, estimatedHours, "SOW estimated hours should match.");
+    //Assert.equal(revealedReportedHours, 0, "SOW reported hours should be 0.");
+    //Assert.equal(revealedHourlyRate, hourlyRate, "SOW hourly rate should match.");
+    //Assert.equal(revealedVendor, vendor, "SOW vendor should match.");
+    //Assert.equal(revealedAccepted, false, "SOW accepted field should be false.");
+    //Assert.equal(revealedDelivered, false, "SOW devliered field should be false.");
   }
 }
