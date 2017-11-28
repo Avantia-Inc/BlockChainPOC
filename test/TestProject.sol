@@ -8,7 +8,7 @@ import "../contracts/testProxies/VendorProxy.sol";
 
 contract TestProject {
 
-  uint bidEnd = now + 1;
+  uint bidEnd = now + 10;
   uint bidReveal = bidEnd + 1;
   VendorProxy vendor = new VendorProxy();
   VendorProxy vendor2 = new VendorProxy();
@@ -34,6 +34,10 @@ contract TestProject {
       vendor.sendProjectBid(myProject, bid);
       
       Assert.equal(myProject.submittedBids(vendor), bid, "Added bid should match vendor address");
+
+      Assert.isZero(myProject.submittedBids(msg.sender), "client should not have bids");
+
+      Assert.notEqual(msg.sender, address(vendor), "client and vendor are not equal");
   }
 
   function testAnotherProjectBid() {
@@ -45,6 +49,8 @@ contract TestProject {
       vendor2.sendProjectBid(myProject, bid2);
       
       Assert.equal(myProject.submittedBids(vendor2), bid2, "Added bid should match vendor address");
+
+      Assert.notEqual(address(vendor), address(vendor2), "vendors should be different");
   }
 
   function testRevealBid() public {
@@ -60,11 +66,11 @@ contract TestProject {
     var (revealedCompletionDate, revealedEstimatedHours, revealedReportedHours, revealedHourlyRate, revealedVendor, revealedAccepted, revealedDelivered) = myProject.revealedBids(vendor);
 
     Assert.equal(revealedCompletionDate, estimatedCompletionDate, "SOW completion date should match.");
-    //Assert.equal(revealedEstimatedHours, estimatedHours, "SOW estimated hours should match.");
-    //Assert.equal(revealedReportedHours, 0, "SOW reported hours should be 0.");
-    //Assert.equal(revealedHourlyRate, hourlyRate, "SOW hourly rate should match.");
-    //Assert.equal(revealedVendor, vendor, "SOW vendor should match.");
-    //Assert.equal(revealedAccepted, false, "SOW accepted field should be false.");
-    //Assert.equal(revealedDelivered, false, "SOW devliered field should be false.");
+    Assert.equal(revealedEstimatedHours, estimatedHours, "SOW estimated hours should match.");
+    Assert.equal(revealedReportedHours, 0, "SOW reported hours should be 0.");
+    Assert.equal(revealedHourlyRate, hourlyRate, "SOW hourly rate should match.");
+    Assert.equal(revealedVendor, vendor, "SOW vendor should match.");
+    Assert.equal(revealedAccepted, false, "SOW accepted field should be false.");
+    Assert.equal(revealedDelivered, false, "SOW devliered field should be false.");
   }
 }

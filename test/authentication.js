@@ -4,7 +4,7 @@ contract('Authentication', function(accounts) {
 
   it("...should sign up and log in a user.", function() {
     return Authentication.deployed().then(function(instance) {
-      authenticationInstance = instance;
+      authenticationInstance = instance; console.log("log message");
 
       return authenticationInstance.signup('testuser', {from: accounts[0]});
     }).then(function() {
