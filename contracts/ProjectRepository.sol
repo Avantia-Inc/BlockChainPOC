@@ -10,6 +10,7 @@ contract ProjectRepository {
         // TODO: project creation event
     }
 
+    // Cannot return dynamic arrays to external callers so this function will only work when called from web3.js
     function myProjects() view public returns (Project[] _myProjects) {
         return projects[msg.sender];
     }
