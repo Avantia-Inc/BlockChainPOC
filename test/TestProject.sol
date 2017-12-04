@@ -9,6 +9,16 @@ contract TestProject {
   // Truffle will send the TestContract one Ether after deploying the contract.
   uint public initialBalance = 1 ether;
 
+  uint private bidEnd = now + 10;
+  uint private bidReveal = bidEnd + 60;
+  uint private estimatedCompletionDate = now + 10000;
+  uint private estimatedHours = 500;
+  uint private hourlyRate = 300;
+  bytes32 private bid = keccak256(estimatedCompletionDate, estimatedHours, hourlyRate);
+  VendorProxy private vendor = new VendorProxy();
+
+  enum TestStage { Bid, Reveal, Accept, RecordHours, MarkDelivery, Complete, Withdrawl }
+
   function testProjectCreation() public {
     var myProject = new Project("test", now + 60, now + 120);
 
@@ -20,7 +30,6 @@ contract TestProject {
 
   function testProjectBid() public {
     var myProject = new Project("test", now + 60, now + 120);
-    var vendor = new VendorProxy();
 
     // a vendor can send bids
     vendor.sendProjectBid(myProject, "some bid string");
@@ -39,7 +48,6 @@ contract TestProject {
 
   function testBiddingEnded() public {
     var myProject = new Project("test", now - 60, now + 120);
-    var vendor = new VendorProxy();
 
     // bidding has ended so any bids should fail
     Project(address(vendor)).submitBid("bid string"); // prime the proxy
@@ -49,16 +57,9 @@ contract TestProject {
   }
 
   function testRevealBid() public {
-    uint bidEnd = now + 10;
-    uint bidReveal = bidEnd + 60;
-    uint estimatedCompletionDate = now + 10000;
-    uint estimatedHours = 500;
-    uint hourlyRate = 300;
-    bytes32 bid = keccak256(estimatedCompletionDate, estimatedHours, hourlyRate);
 
     var projectProxy = new ProjectProxy("proxy", bidEnd, bidReveal); // use project proxy to control uneditable Project state variables
 
-    var vendor = new VendorProxy();
     // add bid
     vendor.sendProjectBid(projectProxy, bid);
 
@@ -80,16 +81,8 @@ contract TestProject {
   }
 
   function testInvalidReveals() public {
-    uint bidEnd = now + 10;
-    uint bidReveal = bidEnd + 60;
-    uint estimatedCompletionDate = now + 10000;
-    uint estimatedHours = 500;
-    uint hourlyRate = 300;
-    bytes32 bid = keccak256(estimatedCompletionDate, estimatedHours, hourlyRate);
+    var projectProxy = new ProjectProxy("proxy", bidEnd, bidReveal);
 
-    var projectProxy = new ProjectProxy("proxy", bidEnd, bidReveal); // use project proxy to control uneditable Project state variables
-
-    var vendor = new VendorProxy();
     // add bid
     vendor.sendProjectBid(projectProxy, bid);
 
@@ -111,26 +104,48 @@ contract TestProject {
   }
 
   function testAcceptBid() public {
-    uint bidEnd = now + 10;
-    uint bidReveal = bidEnd + 60;
-    uint estimatedCompletionDate = now + 10000;
-    uint estimatedHours = 500;
-    uint hourlyRate = 300;
-    bytes32 bid = keccak256(estimatedCompletionDate, estimatedHours, hourlyRate);
-
-    var projectProxy = new ProjectProxy("proxy", bidEnd, bidReveal); // use project proxy to control uneditable Project state variables
-
-    var vendor = new VendorProxy();
-    // add bid
-    vendor.sendProjectBid(projectProxy, bid);
-    // reveal bid
-    projectProxy.setBiddingEnd(now - 60); // end bidding
-    vendor.revealProjectBid(projectProxy, estimatedCompletionDate, estimatedHours, hourlyRate);
+    var projectProxy = setupProject(TestStage.Accept);
 
     projectProxy.acceptBid.value(estimatedHours * hourlyRate)(vendor);
 
     Assert.equal(projectProxy.acceptedVendor(), vendor, "vendor should be accepted");
 
     Assert.equal(uint(projectProxy.state()), 1, "state should be Sold (1)");
+  }
+
+  function testRecordHours() public {
+    ProjectProxy projectProxy = setupProject(TestStage.RecordHours);
+
+    vendor.recordProjectHours(projectProxy, 10);
+
+    Assert.equal(projectProxy.totalDue(), 10 * hourlyRate, "total due should match");
+  }
+
+  function setupProject(TestStage stage) private returns (ProjectProxy testObject) {    
+
+    var projectProxy = new ProjectProxy("proxy", bidEnd, bidReveal); // use project proxy to control uneditable Project state variables
+
+    // add bid
+    vendor.sendProjectBid(projectProxy, bid);
+    // reveal bid
+    projectProxy.setBiddingEnd(now - 60); // end bidding
+
+    if (stage == TestStage.Reveal) {
+      return projectProxy;
+    }
+
+    vendor.revealProjectBid(projectProxy, estimatedCompletionDate, estimatedHours, hourlyRate);
+
+    if (stage == TestStage.Accept) {
+      return projectProxy;
+    }
+
+    projectProxy.acceptBid.value(estimatedHours * hourlyRate)(vendor);
+
+    if (stage == TestStage.RecordHours) {
+      return projectProxy;
+    }
+
+
   }
 }

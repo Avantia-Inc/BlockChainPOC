@@ -14,6 +14,10 @@ contract VendorProxy is Killable {
         project.revealBid(estimatedCompletionDate, estimatedHours, hourlyRate);
     }
 
+    function recordProjectHours(Project project, uint hoursWorked) public {
+        project.recordHours(hoursWorked);
+    }
+
     //prime the data using the fallback function.
     function() public {
         data = msg.data;
