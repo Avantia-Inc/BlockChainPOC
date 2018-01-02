@@ -1,14 +1,15 @@
 import React, { Component } from 'react'
+import ProjectsFormContainer from '../../ui/projectsform/ProjectsFormContainer'
 
-class ChangeRequests extends Component {
+class Profile extends Component {
   render() {
     return(
       <main className="container">
         <div className="pure-g">
           <div className="pure-u-1-1">
             <h1>Projects</h1>
-            <p>Create a project here!</p>
-            <ProjectFormContainer />
+            <p>View your projects here.</p>
+            <ProjectsFormContainer />
           </div>
         </div>
       </main>
@@ -16,4 +17,4 @@ class ChangeRequests extends Component {
   }
 }
 
-export default ChangeRequests
+export default Profile
