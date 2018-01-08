@@ -118,7 +118,11 @@ contract TestProject {
 
     vendor.recordProjectHours(projectProxy, 10);
 
-    Assert.equal(projectProxy.totalDue(), 10 * hourlyRate, "total due should match");
+    Assert.equal(projectProxy.totalDue(), 10 * hourlyRate, "total due should match 10 hours work");
+
+    vendor.recordProjectHours(projectProxy, 5);
+
+    Assert.equal(projectProxy.totalDue(), 15 * hourlyRate, "total due should match 15 hours work");
   }
 
   function setupProject(TestStage stage) private returns (ProjectProxy testObject) {    
@@ -145,7 +149,5 @@ contract TestProject {
     if (stage == TestStage.RecordHours) {
       return projectProxy;
     }
-
-
   }
 }
