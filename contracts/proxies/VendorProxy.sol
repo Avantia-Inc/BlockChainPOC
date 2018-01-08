@@ -18,6 +18,10 @@ contract VendorProxy is Killable {
         project.recordHours(hoursWorked);
     }
 
+    function markProjectDelivery(Project project) public {
+        project.markDelivery();
+    }
+
     //prime the data using the fallback function.
     function() public {
         data = msg.data;
