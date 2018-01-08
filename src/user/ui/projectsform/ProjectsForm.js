@@ -4,6 +4,14 @@ import ProjectRepositoryContract from '../../../../build/contracts/ProjectReposi
 
 const contract = require('truffle-contract')
 
+export const LOAD_PROJECTS = 'LOAD_PROJECTS'
+function buildProjectsTable(projects) {
+  return {
+    type: LOAD_PROJECTS,
+    projects: projects
+  }
+}
+
 class ProjectsForm extends Component {
   constructor(props) {
     super(props)
@@ -32,12 +40,12 @@ class ProjectsForm extends Component {
   }
 
   loadProjects() {
-    let web3 = store.getState().web3.web3Instance
+    let web3 = store.getState().web3.web3Instance;
     
       // Double-check web3's status.
       if (typeof web3 !== 'undefined') {
     
-        //return function(dispatch) {
+        return function(dispatch) {
           // Using truffle-contract we create the authentication object.
           const projectsRepo = contract(ProjectRepositoryContract)
           projectsRepo.setProvider(web3.currentProvider)
@@ -58,8 +66,7 @@ class ProjectsForm extends Component {
               // Attempt to sign up user.
               projectRepoInstance.myProjects({from: coinbase})
               .then(function(result) {
-                debugger;
-                alert(result.length);
+                 dispatch(buildProjectsTable(result))
                 // If no error, login user.
                 //return dispatch(loginUser())
               })
@@ -69,7 +76,7 @@ class ProjectsForm extends Component {
               })
             })
           })
-        //}
+        }
       } else {
         console.error('Web3 is not initialized.');
       }
@@ -90,14 +97,13 @@ class ProjectsForm extends Component {
           </tr>
         </thead>
         <tbody>
-          <tr>
-            <td>My First Project</td>
-            <td>12/15/2017 1:00 PM EST</td>
-            <td>12/15/2016 5:00 PM EST</td>
-            <td>2</td>
-            <td>Open</td>
-            <td><button>TEST</button></td>
+        {this.props.projects.map((row, i) =>
+          <tr key={i}>
+            {row.map((col, j) =>
+              <td>GOT SOMETHING</td>
+            )}
           </tr>
+        )}
         </tbody>
       </table>
       <form className="pure-form pure-form-stacked" onSubmit={this.handleSubmit.bind(this)}>

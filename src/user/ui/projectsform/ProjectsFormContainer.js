@@ -4,7 +4,8 @@ import { createProject } from './ProjectsFormActions'
 
 const mapStateToProps = (state, ownProps) => {
   return {
-    name: state.user.data.name
+    name: state.user.data.name,
+    projects: state.myProjects.projects
   }
 }
 

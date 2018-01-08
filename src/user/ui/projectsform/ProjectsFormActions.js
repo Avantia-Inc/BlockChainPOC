@@ -60,7 +60,7 @@ export function updateUser(name) {
 
 export function createProject(name) {
   let web3 = store.getState().web3.web3Instance
-debugger;
+
   // Double-check web3's status.
   if (typeof web3 !== 'undefined') {
 
@@ -90,7 +90,7 @@ debugger;
             projectRepoInstance.createNewProject(myProject.address, {from: coinbase })
             .then(function() {
               // If no error, update user.
-              debugger;
+    
               //dispatch(userUpdated({"name": name}))
   
               return alert('Project created!')
