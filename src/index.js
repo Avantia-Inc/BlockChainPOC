@@ -10,9 +10,9 @@ import getWeb3 from './util/web3/getWeb3'
 import App from './App'
 import Home from './layouts/home/Home'
 import Dashboard from './layouts/dashboard/Dashboard'
-import Projects from './user/layouts/projects/Projects'
 import SignUp from './user/layouts/signup/SignUp'
 import Profile from './user/layouts/profile/Profile'
+import Projects from './user/layouts/projects/Projects'
 
 // Redux Store
 import store from './store'
@@ -34,8 +34,8 @@ ReactDOM.render((
       <Router history={history}>
         <Route path="/" component={App}>
           <IndexRoute component={Home} />
-          <Route path="dashboard" component={UserIsAuthenticated(Dashboard)} />
           <Route path="projects" component={UserIsAuthenticated(Projects)} />
+          <Route path="dashboard" component={UserIsAuthenticated(Dashboard)} />
           <Route path="signup" component={UserIsNotAuthenticated(SignUp)} />
           <Route path="profile" component={UserIsAuthenticated(Profile)} />
         </Route>

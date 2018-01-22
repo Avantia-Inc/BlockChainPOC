@@ -12,7 +12,7 @@ function userLoggedIn(user) {
   }
 }
 
-export function loginUser() {  
+export function loginUser() {
   let web3 = store.getState().web3.web3Instance
 
   // Double-check web3's status.
@@ -40,7 +40,6 @@ export function loginUser() {
           authenticationInstance.login({from: coinbase})
           .then(function(result) {
             // If no error, login user.
-            debugger;
             var userName = web3.toUtf8(result)
 
             dispatch(userLoggedIn({"name": userName}))

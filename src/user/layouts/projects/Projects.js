@@ -1,20 +1,55 @@
 import React, { Component } from 'react'
-import ProjectsFormContainer from '../../ui/projectsform/ProjectsFormContainer'
+import { connect } from 'react-redux'
+import { loadProjects } from './ProjectsActions'
 
-class Profile extends Component {
+const loadData = ({loadProjects}) => {
+  loadProjects();
+};
+
+class ProjectsForm extends Component {
+  constructor(props) {
+    super(props)
+
+    //this.state = {
+      //name: this.props.name
+    //}
+  }
+
+  componentDidMount() {
+    loadData(this.props);
+  }
+
   render() {
     return(
       <main className="container">
-        <div className="pure-g">
-          <div className="pure-u-1-1">
-            <h1>Projects</h1>
-            <p>View your projects here.</p>
-            <ProjectsFormContainer />
-          </div>
+      <div className="pure-g">
+        <div className="pure-u-1-1">
+          <table>
+          <tbody>
+          {this.props.projects.map((project, i) =>
+            <tr key={i}>
+              <td>{project.name}</td>
+            </tr>
+          )}
+          </tbody>
+        </table>
         </div>
-      </main>
+      </div>
+    </main>
     )
   }
 }
 
-export default Profile
+const mapStateToProps = (state, ownProps) => {
+  return {
+    projects: state.projects.projects
+  }
+}
+
+export default connect(
+  mapStateToProps,
+  {
+    loadProjects
+  }
+)(ProjectsForm);
+
