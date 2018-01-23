@@ -13,7 +13,8 @@ class ProjectsForm extends Component {
     this.state = {
       name: this.props.name,
       endDate: this.props.endDate,
-      revealEndDate: this.props.revealEndDate
+      revealEndDate: this.props.revealEndDate,
+      projects: this.props.projects
     }
   }
 
@@ -82,7 +83,9 @@ const mapDispatchToProps = (dispatch) => {
        event.preventDefault();
        dispatch(createProject(name, endDate, revealEndDate));
     },
-    loadProjects: loadProjects
+    loadProjects: () => {
+      dispatch(loadProjects());
+    }
   }
 }
 

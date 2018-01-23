@@ -5,6 +5,13 @@ import "./Project.sol";
 contract ProjectRepository {
     mapping(address => Project[]) private projects;
 
+     struct ProjectSummary {
+         uint index;
+         bytes32 name;
+         uint biddingEnd;
+         uint revealEnd;
+    }
+
     function createNewProject(bytes32 _name, uint _biddingEnd, uint _revealEnd) public {
         projects[msg.sender].push(new Project(_name, _biddingEnd, _revealEnd));
         //projects[msg.sender].push(0);
@@ -22,7 +29,13 @@ contract ProjectRepository {
         return projects[msg.sender];
     }
 
-    function projectAt(uint index) view public returns (Project _project) {
-        return projects[msg.sender][index];
+    function projectAt(uint index) view public returns (ProjectSummary _project) {
+        var project = Project(projects[msg.sender][index]);
+        return ProjectSummary({
+            index: index, 
+            name: project.name(), 
+            biddingEnd: project.biddingEnd(), 
+            revealEnd: project.revealEnd()
+        });
     }
 }
