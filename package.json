@@ -36,7 +36,7 @@
     "path-exists": "4.0.0",
     "postcss-loader": "3.0.0",
     "promise": "8.0.3",
-    "react-dev-utils": "^9.0.1",
+    "react-dev-utils": "^11.0.4",
     "recursive-readdir": "2.2.2",
     "strip-ansi": "5.2.0",
     "style-loader": "0.23.1",
